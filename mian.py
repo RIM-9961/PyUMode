@@ -49,8 +49,7 @@ def load():
 def OffAll():
     print("关闭")
 if __name__  == '__main__':
-    print(1)
-    print(12)
+
     loadThread = multiprocessing.Process(name='loadThread',target=load)
     loadThread.start()
     atexit.register(OffAll)
