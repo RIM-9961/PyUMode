@@ -16,7 +16,6 @@
     <file>script/progress.json</file>
   </qresource>
   <qresource prefix="image">
-    <file>image/shows.jpg</file>
     <file>image/mrs.gif</file>
     <file>image/AHUT.jpg</file>
     <file>image/noimage.png</file>
