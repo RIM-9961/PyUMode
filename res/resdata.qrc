@@ -1,0 +1,25 @@
+<RCC>
+  <qresource prefix="qml">
+    <file>qml/CameraControl.qml</file>
+    <file>qml/FuncValControl.qml</file>
+    <file>qml/HotloadWindow.qml</file>
+    <file>qml/GRAbout.qml</file>
+    <file>qml/GRItemsFooter.qml</file>
+    <file>qml/Progress.qml</file>
+    <file>qml/qmldir</file>
+    <file>qml/SettingsViewModel.qml</file>
+    <file>qml/GRMainList.qml</file>
+    <file>qml/GRMainScreen.qml</file>
+    <file>qml/GRDetectScreen.qml</file>
+  </qresource>
+  <qresource prefix="json">
+    <file>script/progress.json</file>
+  </qresource>
+  <qresource prefix="image">
+    <file>image/shows.jpg</file>
+    <file>image/mrs.gif</file>
+    <file>image/AHUT.jpg</file>
+    <file>image/noimage.png</file>
+    <file>image/favicon.ico</file>
+  </qresource>
+</RCC>

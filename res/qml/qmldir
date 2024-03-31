@@ -1,0 +1,3 @@
+singleton GRMainList 1.0 GRMainList.qml
+singleton GRItemsFooter 1.0 GRItemsFooter.qml
+
