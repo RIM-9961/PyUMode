@@ -24,6 +24,7 @@ class PumdWork(QObject):
     @Slot()
     def About(self):
         engine.load("qrc:qml/qml/GRAbout.qml")
+        self.finished.emit()
 #定义主函数，传入参数loadThread
 def main(loadThread):
     loadThread.terminate()
@@ -49,7 +50,6 @@ def load():
 def OffAll():
     print("关闭")
 if __name__  == '__main__':
-
     loadThread = multiprocessing.Process(name='loadThread',target=load)
     loadThread.start()
     atexit.register(OffAll)

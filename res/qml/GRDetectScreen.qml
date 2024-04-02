@@ -105,7 +105,10 @@ FluArea{
         button_list.itemAt(3).text = "导出图片"
         button_list.itemAt(4).text = "团队介绍"
     }
-     Connections{
+    Connections{
         target: DetectControl  // 指定连接的目标对象
+        function onFinished(){
+            console.log("检测完成")
+        }
     }
 }
