@@ -1,0 +1,4 @@
+cksdk.py 工业相机SDK库模块
+save_image.py 将工业相机图像保存为图片的样例程序
+
+运行时需要拷贝CKCameraDLL.dll和CKCameraDLL_X64.dll到当前目录
