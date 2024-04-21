@@ -1,12 +1,12 @@
 from time import*
 import cv2
 import numpy as np
-img=cv2.imread("res\image\photos.bmp")
+img=cv2.imread("res\image\ppp.png")
 img=cv2.cvtColor(img,cv2.COLOR_RGB2GRAY) if img.shape[2]==3 else img
 img=cv2.resize(img,(1000,1000))
+_,img=cv2.threshold(img,50,255,cv2.THRESH_BINARY)
 F_EXAMPLE = cv2.FastFeatureDetector.create()
 points = F_EXAMPLE.detect(img, None)
-image_with_keypoints = cv2.drawKeypoints(img, points, None, color=(0, 255, 0), flags=0)
 img_n=img.copy().astype(np.uint8)
 for i in range(-90,90):
     angle = i  # 旋转角度
@@ -39,7 +39,6 @@ for contour_ in contours_:
         if point in contour_:
             point_list.append(point)
             if len(point_list)>=2:
-                print(66)
                 cv2.line(img_n__,tuple(point_list[0]),tuple(point_list[1]),(255,0,0),2)
 cv2.imshow("img_n__",img_n_)
 cv2.waitKey(0)
