@@ -1,3 +1,4 @@
+#这个init为什么python不能把它做成一个脚手架呢？
 import multiprocessing
 import numpy as np
 import FluentUI
