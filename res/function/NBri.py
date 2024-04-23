@@ -10,10 +10,11 @@ class imageProFast:
         self.THVMAX=800
         self.THVMIN=10
         self.BLI=2.5
-    def imageRap(self)->cv2.typing.MatLike:
+        self.angle=-0.2
+    def imageRap(self)->cv2.typing.MatLike:#这是图像require和process操作
         imgdata = self.img_data
         _,img=cv2.threshold(imgdata["图片矩阵"],imgdata["最大灰度值"]//self.BLI,imgdata["最大灰度值"],cv2.THRESH_OTSU)
-        img=self.rotateImage(img,-0.2)#旋转图像操作
+        img=self.rotateImage(img,self.angle)#旋转图像操作
         _,img=cv2.threshold(img,imgdata["最大灰度值"]//self.BLI,imgdata["最大灰度值"],cv2.THRESH_OTSU)
         img=self.cleanCenter(img)#中心标签去除操作
         img=self.cleanEdge(img)#边缘杂边去除操作
@@ -92,7 +93,6 @@ class imageProFast:
             yOld=img[y,:]
         return img
 if __name__ == '__main__':
-    weight=0
     img = cv2.imread('res/image/photos.bmp',cv2.IMREAD_GRAYSCALE)
     numax=np.max(img)
     numin=np.min(img)
