@@ -1,4 +1,7 @@
-import cv2
+cc= {"L1","L2","R1","R2","L3","L4","R3","R4"}
+for i in cc:
+    print(cc[i])
+'''import cv2
 import numpy as np
 class img_process:
     def __init__(self,img):
@@ -27,4 +30,4 @@ if __name__ == '__main__':
     _,Th_img=cv2.threshold(img,100,255,cv2.THRESH_BINARY)
     cv2.imshow("img",Th_img)
     cv2.waitKey(0)
-    #img_process(img).CleanZaoDian()
+    #img_process(img).CleanZaoDian()'''
