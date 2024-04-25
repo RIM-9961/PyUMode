@@ -7,7 +7,7 @@ import "qrc:///qml/qml"
 FluWindow {
 
     id:window
-    title:"关于"
+    title:"团队介绍"
     width: 600
     height: 580
     fixSize: true
@@ -27,7 +27,7 @@ FluWindow {
                 font: FluTextStyle.Title
             }
             FluText{
-                text:"v2.2.2"
+                text:"比赛专用版"
                 font: FluTextStyle.Body
                 Layout.alignment: Qt.AlignBottom
             }

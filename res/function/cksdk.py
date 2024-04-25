@@ -17,12 +17,13 @@ def __init():
 
     is_win = (platform.system() == "Windows")
     is_x86 = (platform.architecture()[0] == '32bit')
-
+    path64=os.path.abspath("res\\function\\CKCameraDLL_X64.dll")
+    path=os.path.abspath("res\\function\\CKCameraDLL.dll")
     if is_win:
         if is_x86:
-            _sdk = windll.LoadLibrary("CKCameraDLL.dll")
+            _sdk = windll.LoadLibrary(path)
         else:
-            _sdk = windll.LoadLibrary("D:\\RIM\\PyUMode\\res\\function\\CKCameraDLL_X64.dll")
+            _sdk = windll.LoadLibrary(path64)
         CALLBACK_FUNC_TYPE = WINFUNCTYPE
     else:
         _sdk = cdll.LoadLibrary("libCKCameraSDK.so")

@@ -12,7 +12,7 @@ FluObject {
     FluPaneItem{
         id:item_detect
         count: 0
-        title:"双目探测计算"
+        title:"缺口长度检测"
         menuDelegate: paneItemMenu
         infoBadge:FluBadge{
             count: item_detect.count
@@ -28,7 +28,7 @@ FluObject {
     FluPaneItem{
         id:item_laser
         count: 0
-        title:"激光剪切干涉计算"
+        title:"热加载"
         menuDelegate: paneItemMenu
         infoBadge:FluBadge{
             count: item_laser.count

@@ -7,11 +7,11 @@ import FluentUI
 import "qrc:///qml/qml"
 FluWindow{
     id:window
-    title: "锅炉膨胀指示"
+    title: "缺口长度检测"
     width: Screen.width *0.63
-    height: width /1.6
+    height: Screen.width*0.63 /1.6
     minimumWidth: 520
-    minimumHeight: 200
+    minimumHeight: 520/1.6+50
     launchMode: FluWindowType.SingleTask
     appBar: FluAppBar {
         id:appbar
@@ -24,7 +24,7 @@ FluWindow{
         id:system_tray
         visible: true
         icon.source: "qrc:/image/image/favicon.ico"
-        tooltip: "锅炉膨胀指示"
+        tooltip: "缺口长度检测"
         menu: Menu {
             MenuItem {
                 text: "退出"
@@ -50,7 +50,7 @@ FluWindow{
         buttonFlags: FluContentDialogType.NegativeButton | FluContentDialogType.NeutralButton | FluContentDialogType.PositiveButton
         onNegativeClicked:{
             window.hide()
-            system_tray.showMessage("友情提示","锅炉膨胀指示已隐藏至托盘,点击托盘可再次激活窗口");
+            system_tray.showMessage("友情提示","缺口长度检测已隐藏至托盘,点击托盘可再次激活窗口");
         }
         positiveText:"退出"
         neutralText:"取消"
@@ -151,7 +151,7 @@ FluWindow{
                 topPadding:FluTools.isMacos() ? 20 : -4
                 displayMode:viewmodel_settings.displayMode
                 logo: "qrc:/image/image/favicon.ico"
-                title:"锅炉膨胀指示"
+                title:"缺口长度检测"
                 Component.onCompleted: {
                     GRMainList.navigationView = nav_view
                     GRMainList.paneItemMenu = nav_item_right_menu
