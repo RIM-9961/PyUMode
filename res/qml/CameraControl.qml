@@ -24,7 +24,7 @@ FluWindow {
                 spacing: 10
                 Layout.topMargin: 14
                 FluText{
-                    text:"图片旋转角度"
+                    text:"不知道写些什么"
                     Layout.alignment: Qt.AlignVCenter
                 }
                 FluTextBox{
@@ -36,24 +36,24 @@ FluWindow {
         RowLayout{
                 spacing: 10
                 FluText{
-                    text:"过滤比例(高)"
+                    text:"曝光时间     "
                     Layout.alignment: Qt.AlignVCenter
                 }
                 FluSlider{
-                    id:slider_text_size
+                    id:baoguangtime
                     value: 0
-                    from: 600
-                    to:1500
+                    from: 0
+                    to:10000
                 }
         }
         RowLayout{
                 spacing: 10
                 FluText{
-                    text:"过滤比例(低)"
+                    text:"亮度调整     "
                     Layout.alignment: Qt.AlignVCenter
                 }
                 FluSlider{
-                    id:slider_gap_x
+                    id:liangdu
                     value: 0
                     from: 0
                     to:40
@@ -106,6 +106,12 @@ FluWindow {
             }
         }
         Component.onCompleted: {
+        }
+        Connections{
+            target: DetectControl  // 指定连接的目标对象
+            function onGetCameraCC(){
+                DetectControl.GetCameraCC([baoguangtime.value,liangdu.value])
+            }
         }
     }
 }

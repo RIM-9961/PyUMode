@@ -2,27 +2,38 @@
 import cksdk
 import time
 import cv2
+import os
 import numpy as np
 from ctypes import *
-from PySide6.QtCore import QByteArray,QBuffer,QIODevice, QTextStream
+from PySide6.QtCore import QByteArray,QBuffer,QIODevice
 from PySide6.QtGui import QImage
+import json
+import tempfile
 while True:
-    print("查找相机")
     result=cksdk.CameraEnumerateDevice()
     if result[0]!=0:
-        time.sleep(3)
+        time.sleep(2)
         continue
-    print("找到了一个相机: %d" % result[1])
     result=cksdk.CameraInit(0)#初始化相机
     if result[0]!=0:
-        time.sleep(3)
+        time.sleep(2)
         continue
     hCamera=result[1]
     cksdk.CameraSetIspOutFormat(hCamera, cksdk.CAMERA_MEDIA_TYPE_RGB8)
     cksdk.CameraSetTriggerMode(hCamera, 0)# 设置为连续拍照模式
     cksdk.CameraPlay(hCamera)# 开启相机
     while True:
-        result=cksdk.CameraGetImageBufferEx(hCamera, 1000)
+        cameraCCPath=sys.argv[1]
+        try:
+            with open(cameraCCPath,'r') as f:
+                cameraCC = f.read()
+                if cameraCC is not None:
+                    cameraCC=json.loads(cameraCC)
+                    #cksdk.CameraSetWbMode(hCamera,False)
+                    cksdk.CameraSetAeState(hCamera,False)
+                    cksdk.CameraSetExposureTime(hCamera,cameraCC[0])
+        except:pass
+        result=cksdk.CameraGetImageBufferEx(hCamera,1000)
         img_data=result[0]
         if img_data is not None:
             img_info=result[1]
@@ -37,15 +48,15 @@ while True:
             buffer.open(QIODevice.WriteOnly)
             PImage.save(buffer, "PNG")
             ImgBase64=byte_array.toBase64().data().decode()# 将QByteArray 转换为 base64 编码的字符串
-            cv2.imshow("Camera", Img)
-            '''out = QTextStream(sys.stdout)
-            out.setCodec("UTF-8")
-            out << "Data from child process\n"'''
-        key=cv2.waitKey(30)
+            #cv2.imshow("Camera",Img)
+            #cv2.waitKey(1)
+            print(ImgBase64)
+            sys.stdout.flush()
+        '''key=cv2.waitKey(30)
         if key == 27 or result[0]==None:
             break
         elif key == ord('b'):
             cksdk.CameraSetOnceWB(hCamera)
     cksdk.CameraPause(hCamera)#暂停相机
     cv2.destroyAllWindows()
-    cksdk.CameraUnInit(hCamera)#去初始化相机
+    cksdk.CameraUnInit(hCamera)#去初始化相机'''

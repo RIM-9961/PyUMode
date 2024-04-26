@@ -2076,7 +2076,7 @@ def CameraSetDisplayCallbackFun(hCamera, displayCallback, lpParam):
      #@param[in] uWaitTimeMs Timeout in milliseconds. During this time, if there is still no data successfully captured, a timeout message is returned.
      #@return @link #__CK_ERRCODE__ Status Code @endlink
     #CKSDK_API CameraSdkStatus __stdcall CameraSnapToBuffer(HANDLE hCamera, PHANDLE phBuf, stImageInfo *pImgInfo, BYTE** ppImgBuf, UINT uWaitTimeMs);
-def CameraSnapToBuffer(hCamer, uWaitTimeMs):
+def CameraSnapToBuffer(hCamera, uWaitTimeMs):
     hBuf = c_void_p()
     pImgInfo = stImageInfo()
     pImgBuf = c_void_p()
@@ -2423,7 +2423,7 @@ def CameraSetAntiFlick(hCamera, bEnable):
      #@param[out] pbEnable The pointer returns the enable state of this function.
      #@return @link #__CK_ERRCODE__ Status Code @endlink
     #CKSDK_API CameraSdkStatus __stdcall CameraGetAntiFlick(HANDLE hCamera, BOOL *pbEnable);
-def CameraGetAntiFlick(hCamer):
+def CameraGetAntiFlick(hCamera):
     c_pbEnable = c_int()
     err_code = _sdk.CameraGetAntiFlick(hCamera, byref(c_pbEnable))
     return err_code, True if bool(c_pbEnable.value) else False

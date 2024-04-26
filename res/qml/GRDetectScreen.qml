@@ -164,8 +164,8 @@ FluArea{
     }
     Connections{
         target: DetectControl  // 指定连接的目标对象
-        //function onFinished(){
-        //    console.log("检测完成")
+        //function onGetCameraCC(){
+        //    DetectControl.GetCameraCC([])
         //}
         function onImageData(ImgBase64) {
             output_img1.source = output_img2.source

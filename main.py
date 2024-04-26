@@ -15,13 +15,18 @@ from PySide6.QtWidgets import QApplication
 from PySide6.QtQuick import QQuickView
 from PySide6.QtGui import QGuiApplication,QImage
 from __init__ import*
-#要是import*能自动识别该多好 
+import tempfile
+import json
+with tempfile.NamedTemporaryFile(delete=False) as cameraCCPath:
+    cameraCCPath = cameraCCPath.name
 class PumdWork(QObject):#定义一个类，继承自QObject广设比赛UI控制面板
     imageData=Signal(str)
     imageDataIn=Signal(str)
+    getCameraCC=Signal()
     def __init__(self):
         super().__init__()
         self.Img=None
+        self.cameraCC=None
     def uiUpdate(self,name,spacename):#更新UI
         for rootObject in engine.rootObjects():
             if rootObject.title()==name:
@@ -30,11 +35,26 @@ class PumdWork(QObject):#定义一个类，继承自QObject广设比赛UI控制�
         for rootObject in engine.rootObjects():
             if rootObject.title()==name:
                 rootObject.setFlags(rootObject.flags() | Qt.WindowStaysOnTopHint)
+    @Slot(list)
+    def GetCameraCC(self,ccList):#获取相机控制进程
+        lock=True
+        for rootObject in engine.rootObjects():
+            if rootObject.title()=="相机控制":
+                lock=False
+        if lock:self.cameraCC.close()
+        with open(cameraCCPath, 'w') as f:
+            ccList = json.dumps(ccList)
+            f.write(ccList)
+        print(ccList)
     @Slot()
     def About(self):#打开关于界面
         self.uiUpdate("团队介绍","GRAbout")
     @Slot()
     def CameraControl(self):#打开相机控制
+        if self.cameraCC is not None:self.cameraCC.close()
+        self.cameraCC=QProcess()
+        self.cameraCC.start("python",["res/function/camera_control.py",PW])#生成一个检测相机控制窗口并返回调整值的进程
+        self.cameraCC.readyReadStandardOutput.connect(self.getCameraCC.emit)
         self.uiUpdate("相机控制","CameraControl")
     @Slot()
     def functionControl(self):#打开功能控制
@@ -67,12 +87,20 @@ class PumdWork(QObject):#定义一个类，继承自QObject广设比赛UI控制�
         # 将 QByteArray 转换为 base64 编码的字符串
         ImgBase64=byte_array.toBase64().data().decode()
         self.imageData.emit(ImgBase64)
-def findCameraListen(process):
-    data = process.readAllStandardOutput().data().decode()
-    print("Received from child process:", data)
+    def findCameraListen(self):
+        if self.findCamera is None:
+            return
+        Img = self.findCamera.readAllStandardOutput()
+        Img = bytes(Img).decode("gbk")
+        self.imageDataIn.emit(Img)
+    def findCameraSend(self):
+        self.findCamera=QProcess()
+        self.findCamera.start("python",["res/function/camera_send.py",cameraCCPath])
+        self.findCamera.readyReadStandardOutput.connect(self.findCameraListen)
 def main(loadProcess):#注册引擎加载界面
     loadProcess.terminate()
     global engine
+    global PW
     app=QApplication()
     engine=QQmlApplicationEngine()
     PW=PumdWork()
@@ -80,10 +108,8 @@ def main(loadProcess):#注册引擎加载界面
     rootContext=engine.rootContext()
     rootContext.setContextProperty("DetectControl",PW)
     engine.load("qrc:qml/qml/GRMainScreen.qml")
-    findCamera=QProcess()
-    findCamera.start(sys.executable,["res/function/camera_send.py"])
-    findCamera.readyReadStandardOutput.connect(findCameraListen(findCamera))
-    atexit.register(OffAll,[loadProcess,findCamera])
+    PW.findCameraSend()
+    atexit.register(OffAll,loadProcess)
     if not engine.rootObjects():
         sys.exit(-1)
     sys.exit(app.exec())
@@ -95,7 +121,8 @@ def load():#开机动画
     view.show()
     app.exec()
 def OffAll(args):#关机函数
-    args[0].terminate()
+    PW.findCamera.close()
+    args.terminate()
     print("关闭")
 if __name__  == '__main__':
     loadProcess=Process(name='loadProcess',target=load)
