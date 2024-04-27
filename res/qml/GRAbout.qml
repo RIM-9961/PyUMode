@@ -23,7 +23,7 @@ FluWindow {
             Layout.leftMargin: 15
             spacing: 14
             FluText{
-                text:"光刃工作室"
+                text:"OP之光"
                 font: FluTextStyle.Title
             }
             FluText{

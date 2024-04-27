@@ -1,0 +1,25 @@
+from PySide6.QtQml import QQmlApplicationEngine
+from PySide6.QtCore import QObject,Signal,Slot,QProcess,QTimer,Qt,QByteArray,QBuffer,QIODevice
+from PySide6.QtWidgets import QApplication
+from PySide6.QtQuick import QQuickView
+from PySide6.QtGui import QGuiApplication,QImage
+import cv2
+import numpy as np
+import sys
+from NBri import*
+Img=cv2.imread('res/image/input/2.bmp',cv2.IMREAD_GRAYSCALE)
+numax=np.max(Img)
+numin=np.min(Img)
+yI,xI=np.shape(Img)
+Image_pro=imageProFast(Img,numin,numax,yI,xI)
+Img=Image_pro.imageRap()
+Img=cv2.getRectSubPix(Img,(yI,yI),(xI//2,yI//2))
+PImage=QImage(Img.data, Img.shape[1], Img.shape[0], Img.strides[0], QImage.Format_Grayscale8)#QImage.Format_RGB888为彩色转码格式
+byte_array=QByteArray()
+buffer=QBuffer(byte_array)
+buffer.open(QIODevice.WriteOnly)
+PImage.save(buffer, "PNG")
+# 将 QByteArray 转换为 base64 编码的字符串
+ImgBase64=byte_array.toBase64().data().decode()
+print(ImgBase64)
+sys.stdout.flush()

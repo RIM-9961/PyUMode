@@ -112,6 +112,9 @@ FluWindow {
             function onGetCameraCC(){
                 DetectControl.GetCameraCC([baoguangtime.value,liangdu.value])
             }
+            function onBaoGuangTime(num){
+                baoguangtime.value=num
+            }
         }
     }
 }

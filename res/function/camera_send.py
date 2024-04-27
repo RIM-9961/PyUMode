@@ -31,7 +31,11 @@ while True:
                     cameraCC=json.loads(cameraCC)
                     #cksdk.CameraSetWbMode(hCamera,False)
                     cksdk.CameraSetAeState(hCamera,False)
-                    cksdk.CameraSetExposureTime(hCamera,cameraCC[0])
+                    exposureTime=cksdk.CameraGetExposureTime(hCamera)
+                    print("isImgData"+str([exposureTime]))
+                    sys.stdout.flush()
+                    if cameraCC[-1]!=True:
+                        cksdk.CameraSetExposureTime(hCamera,cameraCC[0])
         except:pass
         result=cksdk.CameraGetImageBufferEx(hCamera,1000)
         img_data=result[0]

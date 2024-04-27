@@ -1,6 +1,5 @@
-cc= {"L1","L2","R1","R2","L3","L4","R3","R4"}
-for i in cc:
-    print(cc[i])
+c=b'555'
+print(c,c.decode("gbk"))
 '''import cv2
 import numpy as np
 class img_process:
