@@ -8,7 +8,6 @@ from ctypes import *
 from PySide6.QtCore import QByteArray,QBuffer,QIODevice
 from PySide6.QtGui import QImage
 import json
-import tempfile
 while True:
     result=cksdk.CameraEnumerateDevice()
     if result[0]!=0:

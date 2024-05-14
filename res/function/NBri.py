@@ -5,13 +5,13 @@ import numpy as np
 #让幼儿园大班都能看懂程度的能力
 #保姆级代码
 class imageProFast:#快速图像处理类
-    def __init__(self,img,numin,numax,yI,xI):#这是注册信息
+    def __init__(self,img,numin,numax,yI,xI,THVMAX,THVMIN,BLI,angle,font_size):#这是注册信息
         self.img_data={"图片矩阵":img,"最小灰度值":numin,"最大灰度值":numax,"图片高度":yI,"图片宽度":xI}#图像信息字典
-        self.THVMAX=900#这是过滤比例(高)
-        self.THVMIN=10#这是过滤比例(低)
-        self.BLI=2.5#这是图像二值化比例
-        self.angle=-0.3#图像旋转角度
-        self.font_size=1#这是标记字体时字体大小
+        self.THVMAX=THVMAX#900#这是过滤比例(高)
+        self.THVMIN=THVMIN#10#这是过滤比例(低)
+        self.BLI=BLI#2.5#这是图像二值化比例
+        self.angle=angle#-0.3#图像旋转角度
+        self.font_size=font_size#1#这是标记字体时字体大小
         #以下为定值,不用改
         self.imgRy=range(yI)
         self.imgRy_=range(yI-1,0,-1)
@@ -180,11 +180,11 @@ class imageProFast:#快速图像处理类
             elif j==0:value+=1
         return img
 if __name__ == '__main__':
-    img=cv2.imread('res/image/2.bmp',cv2.IMREAD_GRAYSCALE)
+    img=cv2.imread('res/image/input/126.bmp',cv2.IMREAD_GRAYSCALE)
     numax=np.max(img)
     numin=np.min(img)
     yI,xI=np.shape(img)
-    Image_pro=imageProFast(img,numin,numax,yI,xI)
+    Image_pro=imageProFast(img,numin,numax,yI,xI,700,100,1,0,1)
     img=Image_pro.imageRap()
     cv2.imshow('image',img)
     cv2.waitKey(0)

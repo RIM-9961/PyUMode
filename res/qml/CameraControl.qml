@@ -43,7 +43,7 @@ FluWindow {
                     id:baoguangtime
                     value: 0
                     from: 0
-                    to:10000
+                    to:30000
                 }
         }
         RowLayout{

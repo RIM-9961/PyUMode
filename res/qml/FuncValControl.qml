@@ -11,6 +11,7 @@ FluWindow {
     height: 300
     fixSize: true
     launchMode: FluWindowType.SingleTask
+    property var lock : 0
     Loader {
         id: myLoader
         anchors.centerIn: parent
@@ -28,9 +29,13 @@ FluWindow {
                     Layout.alignment: Qt.AlignVCenter
                 }
                 FluTextBox{
-                    id:text_box
+                    id:angle_data
                     text:"默认"
                     Layout.preferredWidth: 170
+                    onTextChanged:{
+                        if (lock!==0){
+                            DetectControl.GetFunctionCC([angle_data.text,glblMax.value,glblMin.value,ezhcb.value,ztdx.value,xz1.value,xz2.value])
+                        }                    }
                 }
             }
         RowLayout{
@@ -40,10 +45,14 @@ FluWindow {
                     Layout.alignment: Qt.AlignVCenter
                 }
                 FluSlider{
-                    id:slider_text_size
+                    id:glblMax
                     value: 0
                     from: 600
                     to:1500
+                    onValueChanged:{
+                        if (lock!==0){
+                            DetectControl.GetFunctionCC([angle_data.text,glblMax.value,glblMin.value,ezhcb.value,ztdx.value,xz1.value,xz2.value])
+                        }                    }
                 }
         }
         RowLayout{
@@ -53,10 +62,14 @@ FluWindow {
                     Layout.alignment: Qt.AlignVCenter
                 }
                 FluSlider{
-                    id:slider_gap_x
+                    id:glblMin
                     value: 0
                     from: 0
                     to:40
+                    onValueChanged:{
+                        if (lock!==0){
+                            DetectControl.GetFunctionCC([angle_data.text,glblMax.value,glblMin.value,ezhcb.value,ztdx.value,xz1.value,xz2.value])
+                        }                    }
                 }
         }
         RowLayout{
@@ -66,8 +79,12 @@ FluWindow {
                     Layout.alignment: Qt.AlignVCenter
                 }
                 FluSlider{
-                    id:slider_gap_y
+                    id:ezhcb
                     value: 0
+                    onValueChanged:{
+                        if (lock!==0){
+                            DetectControl.GetFunctionCC([angle_data.text,glblMax.value,glblMin.value,ezhcb.value,ztdx.value,xz1.value,xz2.value])
+                        }                    }
                 }
         }
         RowLayout{
@@ -77,8 +94,12 @@ FluWindow {
                     Layout.alignment: Qt.AlignVCenter
                 }
                 FluSlider{
-                    id:slider_offset_x
+                    id:ztdx
                     value: 0
+                    onValueChanged:{
+                        if (lock!==0){
+                            DetectControl.GetFunctionCC([angle_data.text,glblMax.value,glblMin.value,ezhcb.value,ztdx.value,xz1.value,xz2.value])
+                        }                    }
                 }
         }
         RowLayout{
@@ -88,8 +109,12 @@ FluWindow {
                     Layout.alignment: Qt.AlignVCenter
                 }
                 FluSlider{
-                    id:slider_offset_y
+                    id:xz1
                     value: 0
+                    onValueChanged:{
+                        if (lock!==0){
+                            DetectControl.GetFunctionCC([angle_data.text,glblMax.value,glblMin.value,ezhcb.value,ztdx.value,xz1.value,xz2.value])
+                        }                    }
                 }
         }
         RowLayout{
@@ -99,13 +124,35 @@ FluWindow {
                     Layout.alignment: Qt.AlignVCenter
                 }
                 FluSlider{
-                    id:slider_rotate
+                    id:xz2
                     value: 0
                     from: 0
                     to:360
+                    onValueChanged:{
+                        if (lock!==0){
+                            DetectControl.GetFunctionCC([angle_data.text,glblMax.value,glblMin.value,ezhcb.value,ztdx.value,xz1.value,xz2.value])
+                        }
+                    }
             }
         }
         Component.onCompleted: {
+            angle_data.text=DetectControl.GetFunctionCC([])[0]
+            glblMax.value=DetectControl.GetFunctionCC([])[1]
+            glblMin.value=DetectControl.GetFunctionCC([])[2]
+            ezhcb.value=DetectControl.GetFunctionCC([])[3]
+            ztdx.value=DetectControl.GetFunctionCC([])[4]
+            xz1.value=DetectControl.GetFunctionCC([])[5]
+            xz2.value=DetectControl.GetFunctionCC([])[6]
+            lock=1
         }
+        //Connections{
+        //    target: DetectControl  // 指定连接的目标对象
+        //    function onGetCameraCC(){
+        //        DetectControl.GetCameraCC([baoguangtime.value,liangdu.value])
+        //    }
+        //    function onBaoGuangTime(num){
+        //        baoguangtime.value=num
+        //    }
+        //}
     }
 }

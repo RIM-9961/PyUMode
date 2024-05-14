@@ -1,16 +1,16 @@
 #———————————————————————————————————————#                          
 #      ______     __     __    __       #
-#     /\  == \   /\ \   /\ "-./  \      #
+#     /\ ==\   /\ \   /\ "-./  \      #
 #     \ \  __<   \ \ \  \ \ \-./\ \     #
 #      \ \_\ \_\  \ \_\  \ \_\ \ \_\    #
 #       \/_/ /_/   \/_/   \/_/  \/_/    #
 #                                       #                          
 #———————————————————————————————————————#   
 #作者的github主页https://github.com/RIM-9961?tab=repositories                       
-from PySide6.QtQml import QQmlApplicationEngine
+from PySide6.QtQml import QQmlApplicationEngine,QQmlFileSelector,QQmlContext
 from PySide6.QtCore import QObject,Signal,Slot,QProcess,QTimer,Qt,QByteArray,QBuffer,QIODevice
 from PySide6.QtWidgets import QApplication
-from PySide6.QtQuick import QQuickView
+from PySide6.QtQuick import QQuickView,QQuickWindow,QQuickItem
 from PySide6.QtGui import QGuiApplication,QImage
 from __init__ import*
 import tempfile
@@ -18,7 +18,9 @@ import json
 import base64  
 import ast
 with tempfile.NamedTemporaryFile(delete=False) as cameraCCPath:
-    cameraCCPath = cameraCCPath.name
+    cameraCCPath=cameraCCPath.name
+with tempfile.NamedTemporaryFile(delete=False) as functionCCPath:
+    functionCCPath=functionCCPath.name
 class PumdWork(QObject):#定义一个类，继承自QObject广设比赛UI控制面板
     imageData=Signal(str)
     imageDataIn=Signal(str)
@@ -30,6 +32,8 @@ class PumdWork(QObject):#定义一个类，继承自QObject广设比赛UI控制�
         self.cameraCC=None
         self.ImgData=None
         self.isFirst=True
+        self.functionVList=['默认', 900.0, 10.0, 2.5, 0.0, 0.0, 0.0]#功能控制参数
+        self.functionVListOld=None#功能控制上一次的参数（可退回）
     def uiUpdate(self,name,spacename):#更新UI
         for rootObject in engine.rootObjects():
             if rootObject.title()==name:
@@ -38,7 +42,7 @@ class PumdWork(QObject):#定义一个类，继承自QObject广设比赛UI控制�
         for rootObject in engine.rootObjects():
             if rootObject.title()==name:
                 rootObject.setFlags(rootObject.flags() | Qt.WindowStaysOnTopHint)
-    def cleanNeiCun(self):#清空相机控制等子进程在没被调用情况下的内存
+    def CleanNeiCun(self):#清空相机控制等子进程在没被调用情况下的内存
         self.getCameraCC.emit()
         lock=True
         for rootObject in engine.rootObjects():
@@ -54,36 +58,40 @@ class PumdWork(QObject):#定义一个类，继承自QObject广设比赛UI控制�
                 lock=False
         if lock:self.cameraCC.close()
         ccList.append(self.isFirst)
-        with open(cameraCCPath, 'w') as f:
-            ccList = json.dumps(ccList)
+        with open(cameraCCPath,'w') as f:
+            ccList=json.dumps(ccList)
             f.write(ccList)
     @Slot()
     def About(self):#打开关于界面
         self.uiUpdate("团队介绍","GRAbout")
     @Slot()
-    def CameraControl(self):#打开相机控制
+    def CameraControl(self):#打开相机控制界面，并运行相机控制进程
         if self.cameraCC is not None:self.cameraCC.close()
         self.cameraCC=QProcess()
         self.cameraCC.start("python",["res/function/camera_control.py",engine])#生成一个检测相机控制窗口并返回调整值的进程
-        self.cameraCC.readyReadStandardOutput.connect(self.cleanNeiCun)
+        self.cameraCC.readyReadStandardOutput.connect(self.CleanNeiCun)
         self.uiUpdate("相机控制","CameraControl")
-        if self.ImgData ==None and self.isFirst == True:
+        if self.ImgData ==None and self.isFirst==True:
             QTimer.singleShot(500,self.CameraControl)
-        if self.ImgData !=None and self.isFirst == True:
+        if self.ImgData !=None and self.isFirst==True:
             self.isFirst=False
-            with open(cameraCCPath, 'w') as f:
-                ccList = json.dumps(self.ccList.append(self.isFirst))
+            with open(cameraCCPath,'w') as f:
+                ccList=json.dumps(self.ccList.append(self.isFirst))
                 f.write(ccList)
             self.CameraControl()
-        if self.ImgData !=None and self.isFirst == False:
+        if self.ImgData !=None and self.isFirst==False:
             self.baoGuangTime.emit(round(self.ImgData[0][1]))#发送相机初始值重新更新UI
     @Slot()
-    def functionControl(self):#打开功能控制
+    def functionControl(self):#只是打开功能控制界面
+        self.functionVListOld=self.functionVList
         self.uiUpdate("参数调整","FuncValControl")
     @Slot()
     def start(self):#开始按钮
+        with open(functionCCPath,'w') as f:
+            functionVList=json.dumps(self.functionVList)#这里写上参数调整值
+            f.write(functionVList)
         self.inputImg=QProcess()
-        self.inputImg.start("python",["res/function/image_input.py","这里写传入的Img路径"])
+        self.inputImg.start("python",["res/function/image_input.py",functionCCPath])
         self.inputImg.readyReadStandardOutput.connect(self.inputImg2Qml)
         print("开始")
     @Slot()
@@ -93,23 +101,42 @@ class PumdWork(QObject):#定义一个类，继承自QObject广设比赛UI控制�
         else:
             cv2.imwrite("res/image/output/"+str(time.time())+".bmp",self.Img)
             print("输出图像")
-    def inputImg2Qml(self):
-        ImgBase64 = self.inputImg.readAllStandardOutput()
-        ImgBase64 == bytes(ImgBase64).decode("gbk")
-        self.imageData.emit(ImgBase64.data().decode())
-        decoded_bytes = base64.b64decode(ImgBase64)  
-        nparr = np.frombuffer(decoded_bytes, np.uint8)  
-        self.Img = cv2.imdecode(nparr, cv2.IMREAD_GRAYSCALE)
-    def findCameraListen(self):
+    @Slot(list,result=list)
+    def GetFunctionCC(self,ccList):#获取功能控制参数
+        if ccList!=[] and self.functionVList is None:
+            self.functionVList=ccList
+            self.functionVListOld=ccList
+        elif ccList!=[] and ccList!=self.functionVListOld:
+            self.functionVList=ccList
+        else:
+            return self.functionVList
+        print(self.functionVList)
+    def inputImg2Qml(self):#图像处理向右侧显示窗口传递图片信息
+        ImgBase64=self.inputImg.readAllStandardOutput()
+        decoded_bytes=base64.b64decode(ImgBase64)#上面是将base64编码的图像数据从QByteArray通过base64解码读取转换为Bytes
+        nparr=np.frombuffer(decoded_bytes,np.uint8)  
+        self.Img=cv2.imdecode(nparr,cv2.IMREAD_GRAYSCALE)#上面是将base64编码的图像数据转换为numpy.ndarray，这里将numpy.ndarray转换为QImage
+        #--------------------------------------------------------------------------------------处理过程
+
+        #--------------------------------------------------------------------------------------处理过程
+        NImg=self.Img#下面是将处理过的图像数据转换为QByteArray
+        PImage=QImage(NImg.data,NImg.shape[1],NImg.shape[0],NImg.strides[0],QImage.Format_Grayscale8)
+        byte_array=QByteArray()
+        buffer=QBuffer(byte_array)
+        buffer.open(QIODevice.WriteOnly)
+        PImage.save(buffer,"PNG")
+        ImgBase64=byte_array.toBase64().data().decode()
+        self.imageData.emit(ImgBase64)#向右侧显示窗口传递图片信息
+    def findCameraListen(self):#监听子进程相机输出
         if self.findCamera is None:
             return
-        Img = self.findCamera.readAllStandardOutput()
-        Img = bytes(Img).decode("gbk")
+        Img=self.findCamera.readAllStandardOutput()
+        Img=bytes(Img).decode("gbk")
         if "isImgData" in Img:
             self.ImgData=ast.literal_eval(Img[Img.find("isImgData")+9:][:Img[Img.find("isImgData")+9:].find("]")+1])#输出原图像属性
         else:
             self.imageDataIn.emit(Img)
-    def findCameraSend(self):
+    def findCameraSend(self):#运行相机开启脚本进程
         self.findCamera=QProcess()
         self.findCamera.start("python",["res/function/camera_send.py",cameraCCPath])
         self.findCamera.readyReadStandardOutput.connect(self.findCameraListen)
@@ -141,7 +168,7 @@ def OffAll(args):#关机函数
     PW.cameraCC.close()
     args.terminate()
     print("关闭")
-if __name__  == '__main__':
+if __name__ =='__main__':
     loadProcess=Process(name='loadProcess',target=load)
     loadProcess.start()
     main(loadProcess)
