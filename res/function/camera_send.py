@@ -8,33 +8,36 @@ from ctypes import *
 from PySide6.QtCore import QByteArray,QBuffer,QIODevice
 from PySide6.QtGui import QImage
 import json
+cameraCCOld=1
 while True:
     result=cksdk.CameraEnumerateDevice()
     if result[0]!=0:
-        time.sleep(2)
         continue
-    result=cksdk.CameraInit(0)#初始化相机
-    if result[0]!=0:
-        time.sleep(2)
-        continue
-    hCamera=result[1]
-    cksdk.CameraSetIspOutFormat(hCamera, cksdk.CAMERA_MEDIA_TYPE_RGB8)
-    cksdk.CameraSetTriggerMode(hCamera, 0)# 设置为连续拍照模式
-    cksdk.CameraPlay(hCamera)# 开启相机
+    else:
+        result=cksdk.CameraInit(0)#初始化相机
+        if result[0]!=0:
+            continue
+        else:
+            hCamera=result[1]
+            cksdk.CameraSetIspOutFormat(hCamera, cksdk.CAMERA_MEDIA_TYPE_RGB8)
+            cksdk.CameraSetTriggerMode(hCamera, 0)# 设置为连续拍照模式
+            cksdk.CameraPlay(hCamera)# 开启相机
+            cksdk.CameraSetAeState(hCamera,False)#开启手动
     while True:
         cameraCCPath=sys.argv[1]
         try:
             with open(cameraCCPath,'r') as f:
-                cameraCC = f.read()
+                cameraCC=f.read()
                 if cameraCC is not None:
                     cameraCC=json.loads(cameraCC)
                     #cksdk.CameraSetWbMode(hCamera,False)
-                    cksdk.CameraSetAeState(hCamera,False)
-                    exposureTime=cksdk.CameraGetExposureTime(hCamera)
-                    print("isImgData"+str([exposureTime]))
-                    sys.stdout.flush()
-                    if cameraCC[-1]!=True:
-                        cksdk.CameraSetExposureTime(hCamera,cameraCC[0])
+                    exposureTime=cksdk.CameraGetExposureTime(hCamera)#获取曝光量
+                    if round(exposureTime[1])!=round(cameraCC[0]):
+                        print("isImgData"+str([exposureTime]))
+                        sys.stdout.flush()
+                        if cameraCC[-1]!=True:
+                            cksdk.CameraSetExposureTime(hCamera,cameraCC[0])
+                        cameraCCOld=cameraCC[1]
         except:pass
         result=cksdk.CameraGetImageBufferEx(hCamera,1000)
         img_data=result[0]

@@ -153,6 +153,7 @@ FluArea{
     }
     Component.onCompleted: {
         button_list.itemAt(0).text="相机控制"
+        button_list.itemAt(0).disabled=true
         button_list.itemAt(1).text="开始"
         button_list.itemAt(1).font.bold=true
         //button_list.itemAt(1).color="red"
@@ -174,6 +175,16 @@ FluArea{
         function onImageDataIn(ImgBase64) {
             input_img1.source = input_img2.source
             input_img2.source = "data:image/png;base64,"+ImgBase64
+        }
+        function onOpenCameraCC(){
+            if (button_list.itemAt(0).disabled===true){
+                button_list.itemAt(0).disabled=false
+            }
+        }
+        function onCloseCameraCC(){
+            if (button_list.itemAt(0).disabled===false){
+                button_list.itemAt(0).disabled=true
+            }
         }
     }
 }

@@ -180,7 +180,7 @@ class imageProFast:#快速图像处理类
             elif j==0:value+=1
         return img
 if __name__ == '__main__':
-    img=cv2.imread('res/image/input/126.bmp',cv2.IMREAD_GRAYSCALE)
+    img=cv2.imread('res/image/output/13.bmp',cv2.IMREAD_GRAYSCALE)
     numax=np.max(img)
     numin=np.min(img)
     yI,xI=np.shape(img)

@@ -25,6 +25,8 @@ class PumdWork(QObject):#定义一个类，继承自QObject广设比赛UI控制�
     imageData=Signal(str)
     imageDataIn=Signal(str)
     getCameraCC=Signal()
+    openCameraCC=Signal()
+    closeCameraCC=Signal()
     baoGuangTime=Signal(int)
     def __init__(self):
         super().__init__()
@@ -66,6 +68,7 @@ class PumdWork(QObject):#定义一个类，继承自QObject广设比赛UI控制�
         self.uiUpdate("团队介绍","GRAbout")
     @Slot()
     def CameraControl(self):#打开相机控制界面，并运行相机控制进程
+        print(self.ImgData)
         if self.cameraCC is not None:self.cameraCC.close()
         self.cameraCC=QProcess()
         self.cameraCC.start("python",["res/function/camera_control.py",engine])#生成一个检测相机控制窗口并返回调整值的进程
@@ -129,12 +132,18 @@ class PumdWork(QObject):#定义一个类，继承自QObject广设比赛UI控制�
         self.imageData.emit(ImgBase64)#向右侧显示窗口传递图片信息
     def findCameraListen(self):#监听子进程相机输出
         if self.findCamera is None:
+            print("相机控制进程未开启")
             return
         Img=self.findCamera.readAllStandardOutput()
         Img=bytes(Img).decode("gbk")
         if "isImgData" in Img:
             self.ImgData=ast.literal_eval(Img[Img.find("isImgData")+9:][:Img[Img.find("isImgData")+9:].find("]")+1])#输出原图像属性
+            print(self.ImgData)
+            if self.ImgData[0][1]==0.0:
+                print("未检测到图像")
+                self.closeCameraCC.emit()
         else:
+            self.openCameraCC.emit()
             self.imageDataIn.emit(Img)
     def findCameraSend(self):#运行相机开启脚本进程
         self.findCamera=QProcess()

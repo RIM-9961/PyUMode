@@ -34,7 +34,7 @@ FluWindow {
                     Layout.preferredWidth: 170
                     onTextChanged:{
                         if (lock!==0){
-                            DetectControl.GetFunctionCC([angle_data.text,glblMax.value,glblMin.value,ezhcb.value,ztdx.value,xz1.value,xz2.value])
+                            DetectControl.GetFunctionCC([angle_data.text,glblMax.value,glblMin.value,ezhcb.value,ztdx.value,xz1.text,xz2.text])
                         }                    }
                 }
             }
@@ -51,7 +51,7 @@ FluWindow {
                     to:1500
                     onValueChanged:{
                         if (lock!==0){
-                            DetectControl.GetFunctionCC([angle_data.text,glblMax.value,glblMin.value,ezhcb.value,ztdx.value,xz1.value,xz2.value])
+                            DetectControl.GetFunctionCC([angle_data.text,glblMax.value,glblMin.value,ezhcb.value,ztdx.value,xz1.text,xz2.text])
                         }                    }
                 }
         }
@@ -68,7 +68,7 @@ FluWindow {
                     to:40
                     onValueChanged:{
                         if (lock!==0){
-                            DetectControl.GetFunctionCC([angle_data.text,glblMax.value,glblMin.value,ezhcb.value,ztdx.value,xz1.value,xz2.value])
+                            DetectControl.GetFunctionCC([angle_data.text,glblMax.value,glblMin.value,ezhcb.value,ztdx.value,xz1.text,xz2.text])
                         }                    }
                 }
         }
@@ -83,7 +83,7 @@ FluWindow {
                     value: 0
                     onValueChanged:{
                         if (lock!==0){
-                            DetectControl.GetFunctionCC([angle_data.text,glblMax.value,glblMin.value,ezhcb.value,ztdx.value,xz1.value,xz2.value])
+                            DetectControl.GetFunctionCC([angle_data.text,glblMax.value,glblMin.value,ezhcb.value,ztdx.value,xz1.text,xz2.text])
                         }                    }
                 }
         }
@@ -98,39 +98,37 @@ FluWindow {
                     value: 0
                     onValueChanged:{
                         if (lock!==0){
-                            DetectControl.GetFunctionCC([angle_data.text,glblMax.value,glblMin.value,ezhcb.value,ztdx.value,xz1.value,xz2.value])
+                            DetectControl.GetFunctionCC([angle_data.text,glblMax.value,glblMin.value,ezhcb.value,ztdx.value,xz1.text,xz2.text])
                         }                    }
                 }
         }
         RowLayout{
                 spacing: 10
                 FluText{
-                    text:"闲置1          "
+                    text:"对比度          "
                     Layout.alignment: Qt.AlignVCenter
                 }
-                FluSlider{
+                FluTextBox{
                     id:xz1
-                    value: 0
-                    onValueChanged:{
+                    Layout.preferredWidth: 170
+                    onTextChanged:{
                         if (lock!==0){
-                            DetectControl.GetFunctionCC([angle_data.text,glblMax.value,glblMin.value,ezhcb.value,ztdx.value,xz1.value,xz2.value])
+                            DetectControl.GetFunctionCC([angle_data.text,glblMax.value,glblMin.value,ezhcb.value,ztdx.value,xz1.text,xz2.text])
                         }                    }
                 }
         }
         RowLayout{
                 spacing: 10
                 FluText{
-                    text:"闲置2          "
+                    text:"锐化          "
                     Layout.alignment: Qt.AlignVCenter
                 }
-                FluSlider{
+                FluTextBox{
                     id:xz2
-                    value: 0
-                    from: 0
-                    to:360
-                    onValueChanged:{
+                    Layout.preferredWidth: 170
+                    onTextChanged:{
                         if (lock!==0){
-                            DetectControl.GetFunctionCC([angle_data.text,glblMax.value,glblMin.value,ezhcb.value,ztdx.value,xz1.value,xz2.value])
+                            DetectControl.GetFunctionCC([angle_data.text,glblMax.value,glblMin.value,ezhcb.value,ztdx.value,xz1.text,xz2.text])
                         }
                     }
             }
