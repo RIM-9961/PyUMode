@@ -7,12 +7,16 @@ import cv2
 import numpy as np
 import sys
 from NBri import*
+import base64  
 import json
 functionCCPath=sys.argv[1]
 with open(functionCCPath,'r') as f:
     functionCC = f.read()
     if functionCC is not None:
         fV=json.loads(functionCC)
+decodedBytes=base64.b64decode(fV[-1])#上面是将base64编码的图像数据从QByteArray通过base64解码读取转换为Bytes
+nparr=np.frombuffer(decodedBytes,np.uint8)  
+Img=cv2.imdecode(nparr,cv2.IMREAD_GRAYSCALE)#传输的图像
 Img=cv2.imread('res/image/input/2.bmp',cv2.IMREAD_GRAYSCALE)
 numax=np.max(Img)
 numin=np.min(Img)

@@ -139,8 +139,8 @@ FluWindow {
             glblMin.value=DetectControl.GetFunctionCC([])[2]
             ezhcb.value=DetectControl.GetFunctionCC([])[3]
             ztdx.value=DetectControl.GetFunctionCC([])[4]
-            xz1.value=DetectControl.GetFunctionCC([])[5]
-            xz2.value=DetectControl.GetFunctionCC([])[6]
+            xz1.text=DetectControl.GetFunctionCC([])[5]
+            xz2.text=DetectControl.GetFunctionCC([])[6]
             lock=1
         }
         //Connections{

@@ -21,6 +21,8 @@ with tempfile.NamedTemporaryFile(delete=False) as cameraCCPath:
     cameraCCPath=cameraCCPath.name
 with tempfile.NamedTemporaryFile(delete=False) as functionCCPath:
     functionCCPath=functionCCPath.name
+with tempfile.NamedTemporaryFile(delete=False) as imgPath:
+    imgPath=imgPath.name
 class PumdWork(QObject):#定义一个类，继承自QObject广设比赛UI控制面板
     imageData=Signal(str)
     imageDataIn=Signal(str)
@@ -31,6 +33,7 @@ class PumdWork(QObject):#定义一个类，继承自QObject广设比赛UI控制�
     def __init__(self):
         super().__init__()
         self.Img=None
+        self.ImgN=None
         self.cameraCC=None
         self.ImgData=None
         self.isFirst=True
@@ -68,7 +71,6 @@ class PumdWork(QObject):#定义一个类，继承自QObject广设比赛UI控制�
         self.uiUpdate("团队介绍","GRAbout")
     @Slot()
     def CameraControl(self):#打开相机控制界面，并运行相机控制进程
-        print(self.ImgData)
         if self.cameraCC is not None:self.cameraCC.close()
         self.cameraCC=QProcess()
         self.cameraCC.start("python",["res/function/camera_control.py",engine])#生成一个检测相机控制窗口并返回调整值的进程
@@ -90,19 +92,21 @@ class PumdWork(QObject):#定义一个类，继承自QObject广设比赛UI控制�
         self.uiUpdate("参数调整","FuncValControl")
     @Slot()
     def start(self):#开始按钮
-        with open(functionCCPath,'w') as f:
-            functionVList=json.dumps(self.functionVList)#这里写上参数调整值
-            f.write(functionVList)
-        self.inputImg=QProcess()
-        self.inputImg.start("python",["res/function/image_input.py",functionCCPath])
-        self.inputImg.readyReadStandardOutput.connect(self.inputImg2Qml)
-        print("开始")
+        if self.Img !=None:
+            #--------------------------------------------------------------------------------------处理过程
+            with open(imgPath,'w') as f:
+                imgList=json.dumps([self.Img])#这里写上参数调整值
+                f.write(imgList)
+            self.imgProgress=QProcess()
+            self.imgProgress.start("python",["res/function/image_progress.py",imgPath])
+            self.imgProgress.readyReadStandardOutput.connect(self.imageProgress)
+            #--------------------------------------------------------------------------------------处理过程
     @Slot()
     def outputImg(self):#输出图像按钮
-        if self.Img is None:
+        if self.ImgN is None:
             print("未检测到图像")
         else:
-            cv2.imwrite("res/image/output/"+str(time.time())+".bmp",self.Img)
+            cv2.imwrite("res/image/output/"+str(time.time())+".bmp",self.ImgN)
             print("输出图像")
     @Slot(list,result=list)
     def GetFunctionCC(self,ccList):#获取功能控制参数
@@ -114,22 +118,22 @@ class PumdWork(QObject):#定义一个类，继承自QObject广设比赛UI控制�
         else:
             return self.functionVList
         print(self.functionVList)
+    def imageProgress(self):#图像处理
+        img=self.imgProgress.readAllStandardOutput()
+        img=bytes(img).decode("gbk")
+        functionVList=self.functionVList
+        functionVList.append(img)
+        with open(functionCCPath,'w') as f:
+            functionVList=json.dumps(functionVList)#这里写上参数调整值
+            f.write(functionVList)
+        self.inputImg=QProcess()
+        self.inputImg.start("python",["res/function/image_input.py",functionCCPath])
+        self.inputImg.readyReadStandardOutput.connect(self.inputImg2Qml)
+        print("开始")
     def inputImg2Qml(self):#图像处理向右侧显示窗口传递图片信息
-        ImgBase64=self.inputImg.readAllStandardOutput()
-        decoded_bytes=base64.b64decode(ImgBase64)#上面是将base64编码的图像数据从QByteArray通过base64解码读取转换为Bytes
-        nparr=np.frombuffer(decoded_bytes,np.uint8)  
-        self.Img=cv2.imdecode(nparr,cv2.IMREAD_GRAYSCALE)#上面是将base64编码的图像数据转换为numpy.ndarray，这里将numpy.ndarray转换为QImage
-        #--------------------------------------------------------------------------------------处理过程
-
-        #--------------------------------------------------------------------------------------处理过程
-        NImg=self.Img#下面是将处理过的图像数据转换为QByteArray
-        PImage=QImage(NImg.data,NImg.shape[1],NImg.shape[0],NImg.strides[0],QImage.Format_Grayscale8)
-        byte_array=QByteArray()
-        buffer=QBuffer(byte_array)
-        buffer.open(QIODevice.WriteOnly)
-        PImage.save(buffer,"PNG")
-        ImgBase64=byte_array.toBase64().data().decode()
-        self.imageData.emit(ImgBase64)#向右侧显示窗口传递图片信息
+        img=self.inputImg.readAllStandardOutput()
+        img=bytes(img).decode("gbk")
+        self.imageData.emit(img)#向右侧显示窗口传递图片信息
     def findCameraListen(self):#监听子进程相机输出
         if self.findCamera is None:
             print("相机控制进程未开启")
@@ -138,11 +142,11 @@ class PumdWork(QObject):#定义一个类，继承自QObject广设比赛UI控制�
         Img=bytes(Img).decode("gbk")
         if "isImgData" in Img:
             self.ImgData=ast.literal_eval(Img[Img.find("isImgData")+9:][:Img[Img.find("isImgData")+9:].find("]")+1])#输出原图像属性
-            print(self.ImgData)
             if self.ImgData[0][1]==0.0:
                 print("未检测到图像")
                 self.closeCameraCC.emit()
         else:
+            self.Img=Img
             self.openCameraCC.emit()
             self.imageDataIn.emit(Img)
     def findCameraSend(self):#运行相机开启脚本进程

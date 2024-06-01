@@ -186,5 +186,3 @@ if __name__ == '__main__':
     yI,xI=np.shape(img)
     Image_pro=imageProFast(img,numin,numax,yI,xI,700,100,1,0,1)
     img=Image_pro.imageRap()
-    cv2.imshow('image',img)
-    cv2.waitKey(0)
