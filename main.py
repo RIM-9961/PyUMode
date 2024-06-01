@@ -1,28 +1,40 @@
 #———————————————————————————————————————#                          
 #      ______     __     __    __       #
-#     /\ ==\   /\ \   /\ "-./  \      #
+#     /\  == \   /\ \   /\ "-./  \      #
 #     \ \  __<   \ \ \  \ \ \-./\ \     #
 #      \ \_\ \_\  \ \_\  \ \_\ \ \_\    #
 #       \/_/ /_/   \/_/   \/_/  \/_/    #
 #                                       #                          
 #———————————————————————————————————————#   
-#作者的github主页https://github.com/RIM-9961?tab=repositories                       
+#作者的github主页https://github.com/RIM-9961?tab=repositories 
+# 并没有写热更新，刚开始的时候没想到有这么多                      
 from PySide6.QtQml import QQmlApplicationEngine,QQmlFileSelector,QQmlContext
 from PySide6.QtCore import QObject,Signal,Slot,QProcess,QTimer,Qt,QByteArray,QBuffer,QIODevice
 from PySide6.QtWidgets import QApplication
 from PySide6.QtQuick import QQuickView,QQuickWindow,QQuickItem
 from PySide6.QtGui import QGuiApplication,QImage
-from __init__ import*
+from multiprocessing import Process, Queue
 import tempfile
 import json
 import base64  
+import numpy as np
+import cv2
 import ast
+import time
+import os
+import sys
+import atexit
+import FluentUI
+from res.resdata_rc import *
 with tempfile.NamedTemporaryFile(delete=False) as cameraCCPath:
     cameraCCPath=cameraCCPath.name
 with tempfile.NamedTemporaryFile(delete=False) as functionCCPath:
     functionCCPath=functionCCPath.name
 with tempfile.NamedTemporaryFile(delete=False) as imgPath:
     imgPath=imgPath.name
+absPath = os.path.dirname(os.path.abspath(__file__))
+ruleFilePath = os.path.join(absPath,"res")
+python_interpreter = os.path.join(absPath,"python")+"\python.exe" if getattr(sys, 'frozen', False) else sys.executable
 class PumdWork(QObject):#定义一个类，继承自QObject广设比赛UI控制面板
     imageData=Signal(str)
     imageDataIn=Signal(str)
@@ -73,7 +85,7 @@ class PumdWork(QObject):#定义一个类，继承自QObject广设比赛UI控制�
     def CameraControl(self):#打开相机控制界面，并运行相机控制进程
         if self.cameraCC is not None:self.cameraCC.close()
         self.cameraCC=QProcess()
-        self.cameraCC.start("python",["res/function/camera_control.py",engine])#生成一个检测相机控制窗口并返回调整值的进程
+        self.cameraCC.start(python_interpreter,[ruleFilePath+"/function/camera_control.py",engine])#生成一个检测相机控制窗口并返回调整值的进程
         self.cameraCC.readyReadStandardOutput.connect(self.CleanNeiCun)
         self.uiUpdate("相机控制","CameraControl")
         if self.ImgData ==None and self.isFirst==True:
@@ -98,7 +110,7 @@ class PumdWork(QObject):#定义一个类，继承自QObject广设比赛UI控制�
                 imgList=json.dumps([self.Img])#这里写上参数调整值
                 f.write(imgList)
             self.imgProgress=QProcess()
-            self.imgProgress.start("python",["res/function/image_progress.py",imgPath])
+            self.imgProgress.start(python_interpreter,[ruleFilePath+"/function/image_progress.py",imgPath])
             self.imgProgress.readyReadStandardOutput.connect(self.imageProgress)
             #--------------------------------------------------------------------------------------处理过程
     @Slot()
@@ -106,7 +118,7 @@ class PumdWork(QObject):#定义一个类，继承自QObject广设比赛UI控制�
         if self.ImgN is None:
             print("未检测到图像")
         else:
-            cv2.imwrite("res/image/output/"+str(time.time())+".bmp",self.ImgN)
+            cv2.imwrite(ruleFilePath+"/image/output/"+str(time.time())+".bmp",self.ImgN)
             print("输出图像")
     @Slot(list,result=list)
     def GetFunctionCC(self,ccList):#获取功能控制参数
@@ -127,12 +139,15 @@ class PumdWork(QObject):#定义一个类，继承自QObject广设比赛UI控制�
             functionVList=json.dumps(functionVList)#这里写上参数调整值
             f.write(functionVList)
         self.inputImg=QProcess()
-        self.inputImg.start("python",["res/function/image_input.py",functionCCPath])
+        self.inputImg.start(python_interpreter,[ruleFilePath+"/function/image_input.py",functionCCPath])
         self.inputImg.readyReadStandardOutput.connect(self.inputImg2Qml)
         print("开始")
+    def errorI(self):#图像处理出错
+        print("图像处理出错")
     def inputImg2Qml(self):#图像处理向右侧显示窗口传递图片信息
         img=self.inputImg.readAllStandardOutput()
         img=bytes(img).decode("gbk")
+        print(img)
         self.imageData.emit(img)#向右侧显示窗口传递图片信息
     def findCameraListen(self):#监听子进程相机输出
         if self.findCamera is None:
@@ -150,8 +165,10 @@ class PumdWork(QObject):#定义一个类，继承自QObject广设比赛UI控制�
             self.openCameraCC.emit()
             self.imageDataIn.emit(Img)
     def findCameraSend(self):#运行相机开启脚本进程
+        print("相机控制进程开启")
         self.findCamera=QProcess()
-        self.findCamera.start("python",["res/function/camera_send.py",cameraCCPath])
+        self.findCamera.setProcessChannelMode(QProcess.MergedChannels)
+        self.findCamera.start(python_interpreter,[ruleFilePath+"/function/camera_send.py",cameraCCPath])
         self.findCamera.readyReadStandardOutput.connect(self.findCameraListen)
 def main(loadProcess):#注册引擎加载界面
     loadProcess.terminate()
