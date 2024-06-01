@@ -17,8 +17,8 @@ def __init():
 
     is_win = (platform.system() == "Windows")
     is_x86 = (platform.architecture()[0] == '32bit')
-    path64=os.path.abspath("res\\function\\CKCameraDLL_X64.dll")
-    path=os.path.abspath("res\\function\\CKCameraDLL.dll")
+    path=os.path.dirname(os.path.abspath(__file__))+"\CKCameraDLL_X64.dll"
+    path64=os.path.dirname(os.path.abspath(__file__))+"\CKCameraDLL_X64.dll"
     if is_win:
         if is_x86:
             _sdk = windll.LoadLibrary(path)

@@ -24,26 +24,22 @@ FluWindow {
         RowLayout{
                 spacing: 10
                 Layout.topMargin: 14
-                FluText{
-                    text:"图片旋转角度"
-                    Layout.alignment: Qt.AlignVCenter
-                }
                 FluTextBox{
                     id:angle_data
                     text:"默认"
-                    Layout.preferredWidth: 170
+                    Layout.preferredWidth: 180
                     onTextChanged:{
                         if (lock!==0){
                             DetectControl.GetFunctionCC([angle_data.text,glblMax.value,glblMin.value,ezhcb.value,ztdx.value,xz1.text,xz2.text])
                         }                    }
                 }
+                FluText{
+                    text:"图片旋转角度"
+                    Layout.alignment: Qt.AlignVCenter
+                }
             }
         RowLayout{
                 spacing: 10
-                FluText{
-                    text:"过滤比例(高)"
-                    Layout.alignment: Qt.AlignVCenter
-                }
                 FluSlider{
                     id:glblMax
                     value: 0
@@ -54,13 +50,13 @@ FluWindow {
                             DetectControl.GetFunctionCC([angle_data.text,glblMax.value,glblMin.value,ezhcb.value,ztdx.value,xz1.text,xz2.text])
                         }                    }
                 }
+                FluText{
+                    text:"过滤比例(高)"
+                    Layout.alignment: Qt.AlignVCenter
+                }
         }
         RowLayout{
                 spacing: 10
-                FluText{
-                    text:"过滤比例(低)"
-                    Layout.alignment: Qt.AlignVCenter
-                }
                 FluSlider{
                     id:glblMin
                     value: 0
@@ -71,13 +67,13 @@ FluWindow {
                             DetectControl.GetFunctionCC([angle_data.text,glblMax.value,glblMin.value,ezhcb.value,ztdx.value,xz1.text,xz2.text])
                         }                    }
                 }
+                FluText{
+                    text:"过滤比例(低)"
+                    Layout.alignment: Qt.AlignVCenter
+                }
         }
         RowLayout{
                 spacing: 10
-                FluText{
-                    text:"二值化除比  "
-                    Layout.alignment: Qt.AlignVCenter
-                }
                 FluSlider{
                     id:ezhcb
                     value: 0
@@ -86,13 +82,13 @@ FluWindow {
                             DetectControl.GetFunctionCC([angle_data.text,glblMax.value,glblMin.value,ezhcb.value,ztdx.value,xz1.text,xz2.text])
                         }                    }
                 }
+                FluText{
+                    text:"二值化除比"
+                    Layout.alignment: Qt.AlignVCenter
+                }
         }
         RowLayout{
                 spacing: 10
-                FluText{
-                    text:"字体大小     "
-                    Layout.alignment: Qt.AlignVCenter
-                }
                 FluSlider{
                     id:ztdx
                     value: 0
@@ -101,37 +97,42 @@ FluWindow {
                             DetectControl.GetFunctionCC([angle_data.text,glblMax.value,glblMin.value,ezhcb.value,ztdx.value,xz1.text,xz2.text])
                         }                    }
                 }
+                FluText{
+                    text:"字体大小"
+                    Layout.alignment: Qt.AlignVCenter
+                }
         }
         RowLayout{
                 spacing: 10
-                FluText{
-                    text:"对比度          "
-                    Layout.alignment: Qt.AlignVCenter
-                }
                 FluTextBox{
                     id:xz1
-                    Layout.preferredWidth: 170
+                    Layout.preferredWidth: 180
                     onTextChanged:{
                         if (lock!==0){
                             DetectControl.GetFunctionCC([angle_data.text,glblMax.value,glblMin.value,ezhcb.value,ztdx.value,xz1.text,xz2.text])
-                        }                    }
+                        }                    
+                    }
+                }
+                FluText{
+                    text:"对比度"
+                    Layout.alignment: Qt.AlignVCenter
                 }
         }
         RowLayout{
                 spacing: 10
-                FluText{
-                    text:"锐化          "
-                    Layout.alignment: Qt.AlignVCenter
-                }
                 FluTextBox{
                     id:xz2
-                    Layout.preferredWidth: 170
+                    Layout.preferredWidth: 180
                     onTextChanged:{
                         if (lock!==0){
                             DetectControl.GetFunctionCC([angle_data.text,glblMax.value,glblMin.value,ezhcb.value,ztdx.value,xz1.text,xz2.text])
                         }
                     }
-            }
+                }
+                FluText{
+                    text:"锐化"
+                    Layout.alignment: Qt.AlignVCenter
+                }
         }
         Component.onCompleted: {
             angle_data.text=DetectControl.GetFunctionCC([])[0]
