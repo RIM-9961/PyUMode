@@ -34,8 +34,7 @@ class imageProFast:#快速图像处理类
             img=self.cleanPoints(img)#杂点去除操作
             img=self.countPixel(img)#输出缺口像素点图像
             np.save("res/npy/img.npy",img)
-        except: pass
-        img=imgdata["图片矩阵"]
+        except: img=imgdata["图片矩阵"]
         return img
     def rotateImage(self,img,angle)->cv2.typing.MatLike:#通过warpAffine旋转(老朋友了)
         yI,xI=self.img_data["图片高度"],self.img_data["图片宽度"]

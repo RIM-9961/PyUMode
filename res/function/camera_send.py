@@ -38,6 +38,11 @@ while True:
                         if cameraCC[-1]!=True:
                             cksdk.CameraSetExposureTime(hCamera,cameraCC[0])
                         cameraCCOld=cameraCC[1]
+                    if round(exposureTime[1])==0:
+                        print("isImgData"+str([exposureTime]))
+                        sys.stdout.flush()
+                        cksdk.CameraUnInit(hCamera)
+                        break
         except:pass
         result=cksdk.CameraGetImageBufferEx(hCamera,1000)
         img_data=result[0]

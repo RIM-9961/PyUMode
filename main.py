@@ -147,7 +147,6 @@ class PumdWork(QObject):#定义一个类，继承自QObject广设比赛UI控制�
     def inputImg2Qml(self):#图像处理向右侧显示窗口传递图片信息
         img=self.inputImg.readAllStandardOutput()
         img=bytes(img).decode("gbk")
-        print(img)
         self.imageData.emit(img)#向右侧显示窗口传递图片信息
     def findCameraListen(self):#监听子进程相机输出
         if self.findCamera is None:
