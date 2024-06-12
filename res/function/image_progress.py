@@ -6,7 +6,9 @@ import base64
 import numpy as np
 from PySide6.QtGui import QGuiApplication,QImage
 from PySide6.QtCore import QObject,Signal,Slot,QProcess,QTimer,Qt,QByteArray,QBuffer,QIODevice
-imgPath=sys.argv[1]
+import matplotlib.pyplot as plt
+
+'''imgPath=sys.argv[1]
 with open(imgPath,'r') as f:
     imgList = f.read()
     if imgList is not None:
@@ -23,80 +25,120 @@ buffer.open(QIODevice.WriteOnly)
 PImage.save(buffer,"PNG")
 img=byteArray.toBase64().data().decode()#将处理过的图像数据转换为base64编码的图像数据
 print(img)
-sys.stdout.flush()
+sys.stdout.flush()'''
+cSA1=2
+cSA2=50
+gamma=0.08
 class ImgProcess:
     def __init__(self,img):
         self.img=img
-        self.x,self.y=img.shape
+        self.h,self.w=img.shape
+    def rotateImage(self,img,angle)->cv2.typing.MatLike:#通过warpAffine旋转(老朋友了)
+        h,w=self.h,self.w
+        center=(w//2, h//2) #旋转中心
+        scale=1.0 #缩放因子
+        anchor=cv2.getRotationMatrix2D(center, angle, scale)
+        img=cv2.warpAffine(img, anchor, (w, h))
+        return img
     def StartProcess(self):
         img=self.img
         imgN=np.zeros_like(img)
-        imgN2=np.zeros_like(img)
         imgN3=np.zeros_like(img)
-        imgN4=np.zeros_like(img)
-        img=np.uint8(cv2.addWeighted(img,1,img,0,0))
-        img=cv2.fastNlMeansDenoising(img,dst=None,h=200,templateWindowSize=2,searchWindowSize=7)
-        img=img/255
-        cK=np.array([[-1,-1,-1],[-1, 8,-1],[-1,-1,-1]])
-        imgL=cv2.filter2D(img,-1,cK*5) #滤波
-        img+=imgL*2
-        img=np.where(img>1,1,img)
-        img=cv2.fastNlMeansDenoising(np.uint8(np.abs(img)*255),dst=None,h=200,templateWindowSize=5,searchWindowSize=5)
-        imgN4=cv2.threshold(img,200,255,cv2.THRESH_BINARY)[1]
-        contours=cv2.findContours(imgN4,cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_SIMPLE)[0]
-        areaList=[cv2.contourArea(contour) for contour in contours]
-        imgN4=np.zeros_like(imgN4)
-        cv2.drawContours(imgN4,[contours[areaList.index(max(areaList))]],-1,(255,255,255),-1)
-        img[imgN4>0]=imgN[imgN4>0]
+        img=cv2.convertScaleAbs(img,alpha=cSA1)
 ###################################################################################################################################################################################################################
-        for i in range(self.x):
-            num=np.sum(img[i,:]>=170)#200
-            if num>=400:#600
-                imgN[i,:]=img[i,:]
-        for i in range(self.y):
-            num=np.sum(img[:,i]>=160)#200
-            if num>=300:
-                for j in range(1,self.x-1):
-                    if imgN[j,i]>0:
-                        imgN2[j,i]=imgN[j,i]
-        imgN2=np.where(imgN2>0,255,imgN2)
+        mList=[]
+        for i in range(-50,51):
+            imgR=self.rotateImage(img,i/10)
+            hList=[]
+            for i in range(self.h-2):
+                hList.append(np.sum(imgR[i:i+2,:]))#200
+            changeH=np.int_(np.diff(hList))
+            mList.append(max(changeH))
+        print((-50+mList.index(max(mList)))/10)
+        self.rotateImage(img,(-50+mList.index(max(mList)))/10)
+        wList=[]
+        hList=[]
+        for i in range(self.h-2):
+            hList.append(np.sum(img[i:i+2,:]))#200
+        for i in range(self.w-2):
+            wList.append(np.sum(img[:,i:i+2]))#200
+        hList=np.array(hList)
+        wList=np.array(wList)
+        changeH=np.int_(np.diff(hList))
+        changeW=np.int_(np.diff(wList))
+        # 设置坐标轴标签
+        hList2=np.linspace(0,len(hList),len(hList)-1)
+        wList2=np.linspace(0,len(wList),len(wList)-1)
+        # 显示图形
+        plt.bar(hList2,np.abs(changeH))
+        plt.show()
+        plt.bar(wList2,np.abs(changeW))
+        plt.show()
+        yuZhi=int(input("请输入阈值："))
+        changePointH=np.where(np.abs(changeH)>yuZhi)[0]+1
+        changePointW=np.where(np.abs(changeW)>yuZhi)[0]+1
+        # 列表长度
+        ChangesH=changePointH[(changePointH>1)]
+        ChangesW=changePointW[(changePointW>1)]
+        for i in range(len(ChangesH)-1):
+            frontChangesH=ChangesH[0:i]
+            if ChangesH[i+1]-ChangesH[i]>100:
+                break
+        for i in range(len(ChangesH)-1,0,-1):
+            backChangesH=ChangesH[i:]
+            if ChangesH[i]-ChangesH[i-1]>100:
+                break
+        for i in range(len(ChangesW)-1):
+            frontChangesW=ChangesW[0:i]
+            if ChangesW[i+1]-ChangesW[i]>100:
+                break
+        for i in range(len(ChangesW)-1,0,-1):
+            backChangesW=ChangesW[i:]
+            if ChangesW[i]-ChangesW[i-1]>100:
+                break
+        print("前部分的突变点:", frontChangesH)
+        print("后部分的突变点:", backChangesH)
+        print("前部分的突变点:", frontChangesW)
+        print("后部分的突变点:", backChangesW)
+        frontChangesH=np.linspace(min(frontChangesH),max(frontChangesH),max(frontChangesH)-min(frontChangesH)+1)
+        backChangesH=np.linspace(min(backChangesH),max(backChangesH),max(backChangesH)-min(backChangesH)+1)
+        frontChangesW=np.linspace(min(frontChangesW),max(frontChangesW),max(frontChangesW)-min(frontChangesW)+1)
+        backChangesW=np.linspace(min(backChangesW),max(backChangesW),max(backChangesW)-min(backChangesW)+1)
+        for i in range(self.h):
+            for j in range(self.w):
+                if i in frontChangesH.tolist()+backChangesH.tolist() and j in frontChangesW.tolist()+backChangesW.tolist():
+                    imgN[i,j]=255
 ###################################################################################################################################################################################################################
         lock=0
-        op=2
-        for i in range(self.x):
-            for j in range(self.y):
-                if j<=self.y-2:
-                    if abs(int(imgN2[i,j+1])-int(imgN2[i,j]))==255 or abs(int(imgN2[i,j+1])-int(imgN2[i,j]))==5:
+        for i in range(self.h):
+            for j in range(self.w):
+                if j<=self.w-2:
+                    if abs(int(imgN[i,j+1])-int(imgN[i,j]))==255 or abs(int(imgN[i,j+1])-int(imgN[i,j]))==5:
                         lock+=1
                 if lock/2%2!=0:
-                    if i< self.x//2:
-                        imgN2[i:i+op,j]=np.where(imgN2[i:i+op,j]==0,250,imgN2[i:i+op,j])
-                    else:
-                        imgN2[i-op:i,j]=np.where(imgN2[i-op:i,j]==0,250,imgN2[i-op:i,j])
-        imgN2=cv2.rotate(imgN2,cv2.ROTATE_90_CLOCKWISE)
-        for i in range(self.y):
-            for j in range(self.x):
-                if j<=self.x-2:
-                    if abs(int(imgN2[i,j+1])-int(imgN2[i,j]))==255 or abs(int(imgN2[i,j+1])-int(imgN2[i,j]))==5:
+                    imgN[i,j]=250 if imgN[i,j]==0 else imgN[i,j]
+        imgN=cv2.rotate(imgN,cv2.ROTATE_90_CLOCKWISE)
+        for i in range(self.w):
+            for j in range(self.h):
+                if j<=self.h-2:
+                    if abs(int(imgN[i,j+1])-int(imgN[i,j]))==255 or abs(int(imgN[i,j+1])-int(imgN[i,j]))==5:
                         lock+=1
                 if lock/2%2!=0:
-                    if i< self.x//2:
-                        imgN2[i-op:i,j]=np.where(imgN2[i-op:i,j]==0,250,imgN2[i-op:i,j])
-                    else:
-                        imgN2[i:i+op,j]=np.where(imgN2[i:i+op,j]==0,250,imgN2[i:i+op,j])
-        imgN2=cv2.rotate(imgN2,cv2.ROTATE_90_COUNTERCLOCKWISE)
-        imgN3[imgN2>0]=img[imgN2>0]
-        imgN3=cv2.equalizeHist(imgN3)
-        gamma=0.5  # Gamma值小于1会使图像变亮
+                    imgN[i,j]=250 if imgN[i,j]==0 else imgN[i,j]
+        imgN=cv2.rotate(imgN,cv2.ROTATE_90_COUNTERCLOCKWISE)
+        imgN3[imgN>0]=img[imgN>0]
         invGamma=1.0/gamma
         table=(255*np.power(np.arange(0,256.0,1.0)/255.0,invGamma)).astype(np.uint8)
         imgN3=cv2.LUT(imgN3, table)
-        imgN3=cv2.equalizeHist(imgN3)
-        #imgN3=cv2.threshold(imgN3,120,255,cv2.THRESH_BINARY)[1]
+        imgN3=cv2.convertScaleAbs(imgN3,alpha=cSA2)
+        clahe=cv2.createCLAHE(clipLimit=2.0,tileGridSize=(8,8))
+        imgN3=clahe.apply(imgN3)
         print(imgN3)
         sys.stdout.flush()
         cv2.imwrite("res\image\output\\13.bmp",imgN3)
-'''if __name__=="__main__":
-    img=cv2.imread("res\image\input\\11.bmp",cv2.IMREAD_GRAYSCALE)
-    ImgProcess(img).StartProcess()'''
+        cv2.imshow("33",imgN3)
+        cv2.waitKey(0)
+if __name__=="__main__":
+    img=cv2.imread("res\image\input\\255.bmp",cv2.IMREAD_GRAYSCALE)
+    ImgProcess(img).StartProcess()
 #img=cv2.medianBlur(self.img,5)#模糊

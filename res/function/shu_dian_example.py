@@ -61,6 +61,8 @@ class imageProFast:#快速图像处理类
                 lock=True
             xOld=img[:,x]
         lock=False
+        cv2.imshow("img",img)
+        cv2.waitKey(0)
         for y in self.imgRy:
             num=np.count_nonzero(img[y,:]==255)
             if num>self.THVMAX:
@@ -184,5 +186,7 @@ if __name__ == '__main__':
     numax=np.max(img)
     numin=np.min(img)
     yI,xI=np.shape(img)
-    Image_pro=imageProFast(img,numin,numax,yI,xI,700,100,1,0,1)
+    Image_pro=imageProFast(img,numin,numax,yI,xI,600,20,1,-0.2,1)
     img=Image_pro.imageRap()
+    cv2.imshow("img",img)
+    cv2.waitKey(0)
