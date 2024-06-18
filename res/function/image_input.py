@@ -17,172 +17,150 @@ class imageProFast:#快速图像处理类
         self.BLI=BLI#2.5#这是图像二值化比例
         self.angle=angle#-0.3#图像旋转角度
         self.font_size=font_size#1#这是标记字体时字体大小
-        #以下为定值,不用改
         self.imgRy=range(yI)
         self.imgRy_=range(yI-1,0,-1)
         self.imgRx=range(xI)
         self.imgRx_=range(xI-1,0,-1)
     def imageRap(self)->cv2.typing.MatLike:#这是图像require和process操作
         imgdata=self.img_data
-        try:
-            _,img=cv2.threshold(imgdata["图片矩阵"],imgdata["最大灰度值"]//self.BLI,imgdata["最大灰度值"],cv2.THRESH_OTSU)
-            img=self.rotateImage(img,self.angle)#旋转图像操作
-            _,img=cv2.threshold(img,imgdata["最大灰度值"]//self.BLI,imgdata["最大灰度值"],cv2.THRESH_OTSU)
-            img=self.cleanCenter(img)#中心标签去除操作
-            img=self.cleanEdge(img)#边缘杂边去除操作(第一遍)
-            img=self.cleanEdge(img)#边缘杂边去除操作(第二遍消除边缘误差)
-            img=self.cleanPoints(img)#杂点去除操作
-            img=self.countPixel(img)#输出缺口像素点图像
-            np.save("res/npy/img.npy",img)
-        except: img=imgdata["图片矩阵"]
-        return img
-    def rotateImage(self,img,angle)->cv2.typing.MatLike:#通过warpAffine旋转(老朋友了)
-        yI,xI=self.img_data["图片高度"],self.img_data["图片宽度"]
-        center=(xI//2, yI//2) #旋转中心
-        scale=1.0 #缩放因子
-        anchor=cv2.getRotationMatrix2D(center, angle, scale)
-        img=cv2.warpAffine(img, anchor, (xI, yI))
-        return img
-    def cleanCenter(self,img)-> cv2.typing.MatLike:#不断画圆收缩直至圆轮廓内无0从而去除中心标签
-        yI,xI=self.img_data["图片高度"],self.img_data["图片宽度"]
-        for r in range(yI//2+100,0,-5):
-            img_CZD=np.zeros(img.shape,dtype=np.uint8)
-            cv2.circle(img_CZD,(xI//2,yI//2),r,(255,0,0),2)
-            if np.all(img[img_CZD==255]==0):
-                cv2.circle(img_CZD,(xI//2,yI//2),r,(255,0,0),-1)
-                img[img_CZD==255]=0
-                return img
-    def cleanEdge(self,img)-> cv2.typing.MatLike:#通过遍历横纵坐标完善图像，使边缘更整齐(写罗嗦了)
-        lock=False
-        for x in self.imgRx:
-            num=np.count_nonzero(img[:,x]==255)
-            if num>self.THVMAX:
-                if np.count_nonzero(xOld==255)>num and np.count_nonzero(xOld==255)-num>3:
-                    img[:,x]=xOld
-                if np.count_nonzero(xOld==255)<num and num-np.count_nonzero(xOld==255)<=3:
-                    img[:,x]=xOld
-                lock=True
-            if num<=self.THVMAX and num>=self.THVMIN and lock:img[:,x]=xOld
-            if num<=self.THVMAX and num>=self.THVMIN and not lock:
-                img[:,x]=0
-                lock=True
-            xOld=img[:,x]
-        lock=False
-        for y in self.imgRy:
-            num=np.count_nonzero(img[y,:]==255)
-            if num>self.THVMAX:
-                if np.count_nonzero(yOld==255)>num and np.count_nonzero(yOld==255)-num>3:
-                    img[y,:]=yOld
-                if np.count_nonzero(yOld==255)<num and num-np.count_nonzero(yOld==255)<=3:
-                    img[y,:]=yOld
-                lock=True
-            if num<=self.THVMAX and num>=self.THVMIN and lock:img[y,:]=yOld
-            if num<=self.THVMAX and num>=self.THVMIN and not lock:
-                img[y,:]=0
-                lock=True
-            yOld=img[y,:]
-        lock=False
-        for x in self.imgRx_:
-            num=np.count_nonzero(img[:,x]==255)
-            if num>self.THVMAX:
-                if np.count_nonzero(xOld==255)>num and np.count_nonzero(xOld==255)-num>3:
-                    img[:,x]=xOld
-                if np.count_nonzero(xOld==255)<num and num-np.count_nonzero(xOld==255)<=3:
-                    img[:,x]=xOld
-                lock=True
-            if num<=self.THVMAX and num>=self.THVMIN and lock:img[:,x]=xOld
-            if num<=self.THVMAX and num>=self.THVMIN and not lock:
-                img[:,x]=0
-                lock=True
-            xOld=img[:,x]
-        lock=False
-        for y in self.imgRy_:
-            num=np.count_nonzero(img[y,:]==255)
-            if num>self.THVMAX:
-                if np.count_nonzero(yOld==255)>num and np.count_nonzero(yOld==255)-num>3:
-                    img[y,:]=yOld
-                if np.count_nonzero(yOld==255)<num and num-np.count_nonzero(yOld==255)<=3:
-                    img[y,:]=yOld
-                lock=True
-            if num<=self.THVMAX and num>=self.THVMIN and lock:img[y,:]=yOld
-            if num<=self.THVMAX and num>=self.THVMIN and not lock:
-                img[y,:]=0
-                lock=True
-            yOld=img[y,:]
-        return img
-    def cleanPoints(self,img)-> cv2.typing.MatLike:#清除杂点
-        contours, _ = cv2.findContours(img, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+        edged = cv2.Canny(imgdata["图片矩阵"], 50, 150)
+        kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (13, 13))
+        closed = cv2.morphologyEx(edged, cv2.MORPH_CLOSE, kernel)
+        edged = cv2.Canny(closed, 50, 150)
+        contours, _ = cv2.findContours(edged, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
         for contour in contours:
-            area = cv2.contourArea(contour)
-            if area < 5:
-                cv2.drawContours(img, [contour], 0, 0, -1)
+            peri = cv2.arcLength(contour, True)
+            approx = cv2.approxPolyDP(contour, 0.02 * peri, True)
+            if len(approx) == 4:
+                pts1 = np.float32([point[0] for point in approx])
+                side_length = 1000
+                pts2 = np.float32([[0, 0], [side_length, 0], [side_length, side_length], [0, side_length]])
+                M = cv2.getPerspectiveTransform(pts1, pts2)
+                imgdata["图片矩阵"] = cv2.warpPerspective(imgdata["图片矩阵"], M, (side_length, side_length))
+        imgdata["图片矩阵"]=cv2.flip(imgdata["图片矩阵"],1)
+        h,w=np.shape(imgdata["图片矩阵"])
+        cv2.imshow("img",imgdata["图片矩阵"][0:10,:])
+        cv2.waitKey(0)
+        a=input("请输入上张图片像素点阈值：")
+        cv2.imshow("img",imgdata["图片矩阵"][h-10:h,:])
+        cv2.waitKey(0)
+        b=input("请输入上张图片像素点阈值：")
+        cv2.imshow("img",imgdata["图片矩阵"][:,0:10])
+        cv2.waitKey(0)
+        c=input("请输入上张图片像素点阈值：")
+        cv2.imshow("img",imgdata["图片矩阵"][:,w-10:w])
+        cv2.waitKey(0)
+        d=input("请输入上张图片像素点阈值：")
+        for i in range(w):
+            if np.count_nonzero(imgdata["图片矩阵"][0:10,i]>=200)<=int(a):
+                imgdata["图片矩阵"][0:10,i]=0
+            else:
+                imgdata["图片矩阵"][0:10,i]=255
+        for i in range(w):
+            if np.count_nonzero(imgdata["图片矩阵"][h-10:h,i]>=200)<int(b):
+                imgdata["图片矩阵"][h-10:h,i]=0
+            else:
+                imgdata["图片矩阵"][h-10:h,i]=255
+        for i in range(h):
+            if np.count_nonzero(imgdata["图片矩阵"][i,0:10]>=200)<=int(c):
+                imgdata["图片矩阵"][i,0:10]=0
+            else:
+                imgdata["图片矩阵"][i,0:10]=255
+        for i in range(h):
+            if np.count_nonzero(imgdata["图片矩阵"][i,w-10:w]>=200)<=int(d):
+                imgdata["图片矩阵"][i,w-10:w]=0
+            else:
+                imgdata["图片矩阵"][i,w-10:w]=255
+        _,self.img_data["图片矩阵"]=cv2.threshold(imgdata["图片矩阵"],imgdata["最大灰度值"]//self.BLI,imgdata["最大灰度值"],cv2.THRESH_OTSU)
+        img=self.countPixel([1,h-2,1,w-2])
         return img
     def writeText(self,img,text,position)->cv2.typing.MatLike:#写文字
         font=cv2.FONT_HERSHEY_SIMPLEX
         color=(255,255,255)#白色
         cv2.putText(img,text,position,font,self.font_size,color,2,cv2.LINE_AA)
+        cv2.waitKey(0)
         return img
-    def countPixel(self,img)->cv2.typing.MatLike:#统计缺口像素点(没装装饰器的原因是懒)
-        fP={}#创建"L1","L2","R1","R2"的储存字典
-        LR1List=[]
-        LR2List=[]
-        LLList=[]
-        RRList=[]
+    def countPixel(self,pointList)->cv2.typing.MatLike:#统计缺口像素点(没装装饰器的原因是懒)
         value=0
-        for y in self.imgRy:
-            for x in self.imgRx:
-                if img[y,x]==255:
-                    fP["L2"]=[y,x]
-                    break
-        for y in self.imgRy_:
-            for x in self.imgRx:
-                if img[y,x]==255:
-                    fP["L1"]=[y,x]
-                    break
-        for y in self.imgRy:
-            for x in self.imgRx_:
-                if img[y,x]==255:
-                    fP["R2"]=[y,x]
-                    break
-        for y in self.imgRy_:
-            for x in self.imgRx_:
-                if img[y,x]==255:
-                    fP["R1"]=[y,x]
-                    break
-        for i in range(fP["L1"][0],fP["L2"][0]):
-            j=img[i,fP["L1"][1]]
+        v1=[]
+        v2=[]
+        v3=[]
+        v4=[]
+        h1,h2,w1,w2=pointList
+        img=self.img_data["图片矩阵"]
+        for point in range(w1,w2):
+            j=img[h1,point]
             if j==255:
+                img[h1,point]=0
+                if point<2*(w2-w1)/3 and len(v1)==0 and point>(w2-w1)/3:
+                    self.writeText(img,str(0),[int((w2-w1)/3-50),h1+40])
+                    v1.append(0)
+                if point<w2-w1 and len(v1)==1 and point>2*(w2-w1)/3:
+                    self.writeText(img,str(0),[int(2*(w2-w1)/3-50),h1+40])
+                    v1.append(0)
+                if point==w2-w1-1 and len(v1)==2:
+                    self.writeText(img,str(0),[int((w2-w1)-50),h1+40])
+                    v1.append(0)
                 if value!=0:
-                    value=round(value*(abs(fP["L1"][0]-fP["L2"][0])/1000))
-                    LLList.append(value)
-                    img=self.writeText(img,str(value),[fP["L1"][1]+10,i])
+                    value=round(value*((abs(w1-w2)+2)/1000))
+                    img=self.writeText(img,str(value),[point,h1+40])
+                    v1.append(value)
                 value=0
             elif j==0:value+=1
-        for i in range(fP["R1"][0],fP["R2"][0]):
-            j=img[i,fP["R1"][1]]
+        for point in range(w1,w2):
+            j=img[h2,point]
             if j==255:
+                img[h2,point]=0
+                if point<2*(w2-w1)/3 and len(v2)==0 and point>(w2-w1)/3:
+                    self.writeText(img,str(0),[int((w2-w1)/3-50),h1+40])
+                    v2.append(0)
+                if point<w2-w1 and len(v2)==1 and point>2*(w2-w1)/3:
+                    self.writeText(img,str(0),[int(2*(w2-w1)/3-50),h1+40])
+                    v2.append(0)
+                if point==w2-w1-1 and len(v2)==2:
+                    self.writeText(img,str(0),[int((w2-w1)-50),h1+40])
+                    v2.append(0)
                 if value!=0:
-                    value=round(value*(abs(fP["R1"][0]-fP["R2"][0])/1000))
-                    RRList.append(value)
-                    img=self.writeText(img,str(value),[fP["R1"][1]-40,i])
+                    value=round(value*((abs(w1-w2)+2)/1000))
+                    img=self.writeText(img,str(value),[point,h2-20])
+                    v2.append(value)
                 value=0
             elif j==0:value+=1
-        for i in range(fP["L2"][1],fP["R2"][1]):
-            j=img[fP["L2"][0],i]
+        for point in range(h1,h2):
+            j=img[point,w1]
             if j==255:
+                img[point,w1]=0
+                if point<2*(h2-h1)/3 and len(v3)==0 and point>(h2-h1)/3:
+                    self.writeText(img,str(0),[w1+20,int((h2-h1)/3-50)])
+                    v3.append(0)
+                if point<h2-h1 and len(v3)==1 and point>2*(h2-h1)/3:
+                    self.writeText(img,str(0),[w1+20,int(2*(h2-h1)/3-50)])
+                    v3.append(0)
+                if point==h2-h1-1 and len(v3)==2:
+                    self.writeText(img,str(0),[w1+20,int((h2-h1)-50)])
+                    v3.append(0)
                 if value!=0:
-                    value=round(value*(abs(fP["L2"][1]-fP["R2"][1])/1000))
-                    LR2List.append(value)
-                    img=self.writeText(img,str(value),[i,fP["L2"][0]-10])
+                    value=round(value*((abs(h1-h2)+2)/1000))
+                    img=self.writeText(img,str(value),[w1+20,point])
+                    v3.append(value)
                 value=0
             elif j==0:value+=1
-        for i in range(fP["L1"][1],fP["R1"][1]):
-            j=img[fP["L1"][0],i]
+        for point in range(h1,h2):
+            j=img[point,w2]
             if j==255:
+                img[point,w2]=0
+                if point<2*(h2-h1)/3 and len(v4)==0 and point>(h2-h1)/3:
+                    self.writeText(img,str(0),[w2-50,int((h2-h1)/3-50)])
+                    v4.append(0)
+                if point<h2-h1 and len(v4)==1 and point>2*(h2-h1)/3:
+                    self.writeText(img,str(0),[w2-50,int(2*(h2-h1)/3-50)])
+                    v4.append(0)
+                if point==h2-h1-1 and len(v4)==2:
+                    self.writeText(img,str(0),[w2-50,int((h2-h1)-50)])
                 if value!=0:
-                    value=round(value*(abs(fP["L1"][1]-fP["R1"][1])/1000))
-                    LR1List.append(value)
-                    img=self.writeText(img,str(value),[i,fP["L1"][0]+40])
+                    value=round(value*((abs(h1-h2)+2)/1000))
+                    img=self.writeText(img,str(value),[w2-50,point])
+                    v4.append(value)
                 value=0
             elif j==0:value+=1
         return img

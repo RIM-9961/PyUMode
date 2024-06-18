@@ -7,25 +7,6 @@ import numpy as np
 from PySide6.QtGui import QGuiApplication,QImage
 from PySide6.QtCore import QObject,Signal,Slot,QProcess,QTimer,Qt,QByteArray,QBuffer,QIODevice
 import matplotlib.pyplot as plt
-
-'''imgPath=sys.argv[1]
-with open(imgPath,'r') as f:
-    imgList = f.read()
-    if imgList is not None:
-        imgList=json.loads(imgList)
-decodedBytes=base64.b64decode(imgList[0])#上面是将base64编码的图像数据从QByteArray通过base64解码读取转换为Bytes
-nparr=np.frombuffer(decodedBytes,np.uint8)  
-img=cv2.imdecode(nparr,cv2.IMREAD_GRAYSCALE)#传输的图像
-###########################################################################################################################################################################
-###########################################################################################################################################################################
-PImage=QImage(img.data,img.shape[1],img.shape[0],img.strides[0],QImage.Format_Grayscale8)
-byteArray=QByteArray()
-buffer=QBuffer(byteArray)
-buffer.open(QIODevice.WriteOnly)
-PImage.save(buffer,"PNG")
-img=byteArray.toBase64().data().decode()#将处理过的图像数据转换为base64编码的图像数据
-print(img)
-sys.stdout.flush()'''
 cSA1=2
 cSA2=50
 gamma=0.08
@@ -133,12 +114,31 @@ class ImgProcess:
         imgN3=cv2.convertScaleAbs(imgN3,alpha=cSA2)
         clahe=cv2.createCLAHE(clipLimit=2.0,tileGridSize=(8,8))
         imgN3=clahe.apply(imgN3)
-        print(imgN3)
+        return imgN3
         sys.stdout.flush()
         cv2.imwrite("res\image\output\\13.bmp",imgN3)
         cv2.imshow("33",imgN3)
         cv2.waitKey(0)
-if __name__=="__main__":
-    img=cv2.imread("res\image\input\\255.bmp",cv2.IMREAD_GRAYSCALE)
-    ImgProcess(img).StartProcess()
+'''if __name__=="__main__":
+    img=cv2.imread("E:\PysideGUI\PyUMode\res\image\photos.bmp",cv2.IMREAD_GRAYSCALE)
+    ImgProcess(img).StartProcess()'''
 #img=cv2.medianBlur(self.img,5)#模糊
+imgPath=sys.argv[1]
+with open(imgPath,'r') as f:
+    imgList = f.read()
+    if imgList is not None:
+        imgList=json.loads(imgList)
+decodedBytes=base64.b64decode(imgList[0])#上面是将base64编码的图像数据从QByteArray通过base64解码读取转换为Bytes
+nparr=np.frombuffer(decodedBytes,np.uint8)  
+img=cv2.imdecode(nparr,cv2.IMREAD_GRAYSCALE)#传输的图像
+###########################################################################################################################################################################
+img=ImgProcess(img).StartProcess()
+###########################################################################################################################################################################
+PImage=QImage(img.data,img.shape[1],img.shape[0],img.strides[0],QImage.Format_Grayscale8)
+byteArray=QByteArray()
+buffer=QBuffer(byteArray)
+buffer.open(QIODevice.WriteOnly)
+PImage.save(buffer,"PNG")
+img=byteArray.toBase64().data().decode()#将处理过的图像数据转换为base64编码的图像数据
+print(img)
+sys.stdout.flush()
